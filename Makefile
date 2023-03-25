@@ -33,6 +33,7 @@ generate: $(TOOLS) ipfs-pinning-service.yaml
 		--generator-name go-server \
 		--additional-properties packageName=server,sourceFolder=server,router=mux
 	go mod tidy
+	go fmt ./...
 
 
 .PHONY: test
