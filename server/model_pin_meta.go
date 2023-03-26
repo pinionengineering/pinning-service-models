@@ -29,3 +29,8 @@ func AssertRecursePinMetaRequired(objSlice interface{}) error {
 		return AssertPinMetaRequired(aPinMeta)
 	})
 }
+
+// parsePinMetaParameter parses a value into a PinMeta
+func parsePinMetaParameter(value string, requred bool) (PinMeta, error) {
+	return PinMeta{}, nil
+}

@@ -12,13 +12,15 @@ package server
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/mux"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
+	"time"
+
+	"github.com/gorilla/mux"
 )
 
 // A Route defines the parameters for an api endpoint
@@ -226,4 +228,16 @@ func parseInt32ArrayParameter(param, delim string, required bool) ([]int32, erro
 	}
 
 	return ints, nil
+}
+
+func parseTimeParameter(param, format string, required bool) (time.Time, error) {
+	if param == "" {
+		if required {
+			return time.Time{}, errors.New(errMsgRequiredMissing)
+		}
+
+		return time.Time{}, nil
+	}
+
+	return time.Parse(format, param)
 }

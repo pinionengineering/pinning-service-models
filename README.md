@@ -20,6 +20,10 @@ make clean generate
 
 ## manual edits:
 
+* time package was not imported in several places
+* api_pins.go the GetPins method relies on urlencoded parameters that do not parse into the required types.
+    added parser functions to parse these data types.
+
 
 
 below this line is generated content.

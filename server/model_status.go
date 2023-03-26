@@ -9,6 +9,11 @@
 
 package server
 
+import (
+	"errors"
+	"strings"
+)
+
 // Status : Status a pin object can have at a pinning service
 type Status string
 
@@ -35,4 +40,23 @@ func AssertRecurseStatusRequired(objSlice interface{}) error {
 		}
 		return AssertStatusRequired(aStatus)
 	})
+}
+
+// parseStatusArrayParameter parses a string parameter containing an array of values to []Status
+// this function is used by the generated code
+func parseStatusArrayParameter(param string, delim string, required bool) ([]Status, error) {
+	if param == "" {
+		if required {
+			return nil, errors.New(errMsgRequiredMissing)
+		}
+		return nil, nil
+	}
+
+	strs := strings.Split(param, delim)
+	statuss := make([]Status, len(strs))
+
+	for i, s := range strs {
+		statuss[i] = Status(s)
+	}
+	return statuss, nil
 }

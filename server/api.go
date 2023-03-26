@@ -12,6 +12,7 @@ package server
 import (
 	"context"
 	"net/http"
+	"time"
 )
 
 // PinsApiRouter defines the required methods for binding the api requests to a responses for the PinsApi

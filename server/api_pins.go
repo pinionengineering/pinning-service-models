@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/gorilla/mux"
 )
@@ -144,16 +145,36 @@ func (c *PinsApiController) GetPins(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	cidParam := strings.Split(query.Get("cid"), ",")
 	nameParam := query.Get("name")
-	matchParam := query.Get("match")
-	statusParam := strings.Split(query.Get("status"), ",")
-	beforeParam := query.Get("before")
-	afterParam := query.Get("after")
+	matchParam, err := parseTextMatchingStrategyParameter(query.Get("match"), false)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	statusParam, err := parseStatusArrayParameter(query.Get("status"), ",", false)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	beforeParam, err := parseTimeParameter(time.RFC3339, query.Get("before"), false)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
+	afterParam, err := parseTimeParameter(time.RFC3339, query.Get("after"), false)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	limitParam, err := parseInt32Parameter(query.Get("limit"), false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	metaParam := query.Get("meta")
+	metaParam, err := parsePinMetaParameter(query.Get("meta"), false)
+	if err != nil {
+		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
+		return
+	}
 	result, err := c.service.GetPins(r.Context(), cidParam, nameParam, matchParam, statusParam, beforeParam, afterParam, limitParam, metaParam)
 	// If an error occurred, encode the error with the status code
 	if err != nil {

@@ -9,6 +9,8 @@
 
 package server
 
+import "errors"
+
 // TextMatchingStrategy : Alternative text matching strategy
 type TextMatchingStrategy string
 
@@ -35,4 +37,14 @@ func AssertRecurseTextMatchingStrategyRequired(objSlice interface{}) error {
 		}
 		return AssertTextMatchingStrategyRequired(aTextMatchingStrategy)
 	})
+}
+
+// parseTextMatchingStrategyParameter parses a string parameter into a TextMatchingStrategy
+// this method was not code-generated
+// it is used to parse url query parameters into the TextMatchingStrategy type
+func parseTextMatchingStrategyParameter(param string, required bool) (TextMatchingStrategy, error) {
+	if param == "" && required {
+		return "", errors.New(errMsgRequiredMissing)
+	}
+	return TextMatchingStrategy(param), nil
 }
