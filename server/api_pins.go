@@ -155,12 +155,12 @@ func (c *PinsApiController) GetPins(w http.ResponseWriter, r *http.Request) {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	beforeParam, err := parseTimeParameter(time.RFC3339, query.Get("before"), false)
+	beforeParam, err := parseTimeParameter(query.Get("before"), time.RFC3339, false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
 	}
-	afterParam, err := parseTimeParameter(time.RFC3339, query.Get("after"), false)
+	afterParam, err := parseTimeParameter(query.Get("after"), time.RFC3339, false)
 	if err != nil {
 		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
 		return
