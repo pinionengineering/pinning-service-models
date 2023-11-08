@@ -10,8 +10,10 @@
 package server
 
 // PinMeta - Optional metadata for pin object
-type PinMeta struct {
-}
+// type PinMeta struct {
+// }
+
+type PinMeta map[string]string
 
 // AssertPinMetaRequired checks if the required fields are not zero-ed
 func AssertPinMetaRequired(obj PinMeta) error {

@@ -10,9 +10,11 @@
 package server
 
 // Origins - Optional list of multiaddrs known to provide the data; see Provider Hints in the docs
-type Origins struct {
-	Items []string
-}
+// type Origins struct {
+// 	Items []string
+// }
+
+type Origins []string
 
 // AssertOriginsRequired checks if the required fields are not zero-ed
 func AssertOriginsRequired(obj Origins) error {

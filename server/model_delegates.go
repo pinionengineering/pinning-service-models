@@ -10,9 +10,11 @@
 package server
 
 // Delegates - List of multiaddrs designated by pinning service that will receive the pin data; see Provider Hints in the docs
-type Delegates struct {
-	Items []string
-}
+// type Delegates struct {
+// 	Items []string
+// }
+
+type Delegates []string
 
 // AssertDelegatesRequired checks if the required fields are not zero-ed
 func AssertDelegatesRequired(obj Delegates) error {

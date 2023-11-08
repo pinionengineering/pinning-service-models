@@ -1,4 +1,4 @@
-module github.com/pinionengeering/pinion-service-models
+module github.com/pinionengineering/pinion-service-models
 
 go 1.13
 

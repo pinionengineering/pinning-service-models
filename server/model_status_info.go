@@ -10,8 +10,10 @@
 package server
 
 // StatusInfo - Optional info for PinStatus response
-type StatusInfo struct {
-}
+// type StatusInfo struct {
+// }
+
+type StatusInfo string
 
 // AssertStatusInfoRequired checks if the required fields are not zero-ed
 func AssertStatusInfoRequired(obj StatusInfo) error {

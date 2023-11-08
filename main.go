@@ -13,7 +13,7 @@ import (
 	"log"
 	"net/http"
 
-	server "github.com/pinionengeering/pinion-service-models/server"
+	server "github.com/pinionengineering/pinion-service-models/server"
 )
 
 func main() {
@@ -24,5 +24,5 @@ func main() {
 
 	router := server.NewRouter(PinsApiController)
 
-	log.Fatal(http.ListenAndServe(":8080", router))
+	log.Fatal(http.ListenAndServe(":8081", router))
 }
