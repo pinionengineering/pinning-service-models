@@ -13,7 +13,7 @@ import (
 	"log"
 	"net/http"
 
-	server "github.com/pinionengineering/pinion-service-models/server"
+	server "github.com/pinionengineering/pinning-service-models/server"
 )
 
 func main() {

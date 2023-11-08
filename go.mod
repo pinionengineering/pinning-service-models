@@ -1,5 +1,5 @@
-module github.com/pinionengineering/pinion-service-models
+module github.com/pinionengineering/pinning-service-models
 
-go 1.13
+go 1.21.4
 
-require github.com/gorilla/mux v1.7.3
+require github.com/gorilla/mux v1.8.1

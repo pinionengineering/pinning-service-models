@@ -1,7 +1,7 @@
 export PATH := $(PWD)/tools/apache-maven-3.9.1/bin:$(PWD)/tools/:$(PATH)
 export GITHOSTNAME := github.com
 export GITUSERID := pinionengineering
-export GITREPOID := pinion-service-models
+export GITREPOID := pinning-service-models
 export TYPEMAPPING := "TextMatchingStrategy=string"
 
 
