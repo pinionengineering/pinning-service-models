@@ -10,29 +10,5 @@
 package server
 
 // PinMeta - Optional metadata for pin object
-// type PinMeta struct {
-// }
-
-type PinMeta map[string]string
-
-// AssertPinMetaRequired checks if the required fields are not zero-ed
-func AssertPinMetaRequired(obj PinMeta) error {
-	return nil
-}
-
-// AssertRecursePinMetaRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of PinMeta (e.g. [][]PinMeta), otherwise ErrTypeAssertionError is thrown.
-func AssertRecursePinMetaRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aPinMeta, ok := obj.(PinMeta)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertPinMetaRequired(aPinMeta)
-	})
-}
-
-// parsePinMetaParameter parses a value into a PinMeta
-func parsePinMetaParameter(value string, requred bool) (PinMeta, error) {
-	return PinMeta{}, nil
+type PinMeta struct {
 }

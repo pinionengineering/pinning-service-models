@@ -10,205 +10,43 @@
 package server
 
 import (
-	"encoding/json"
-	"net/http"
-	"strings"
-	"time"
-
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 )
 
-// PinsApiController binds http requests to an api service and writes the service results to the http response
-type PinsApiController struct {
-	service      PinsApiServicer
-	errorHandler ErrorHandler
+type PinsAPI struct {
 }
 
-// PinsApiOption for how the controller is set up.
-type PinsApiOption func(*PinsApiController)
-
-// WithPinsApiErrorHandler inject ErrorHandler into controller
-func WithPinsApiErrorHandler(h ErrorHandler) PinsApiOption {
-	return func(c *PinsApiController) {
-		c.errorHandler = h
-	}
+// Post /pins
+// Add pin object
+func (api *PinsAPI) AddPin(c *gin.Context) {
+	// Your handler implementation
+	c.JSON(200, gin.H{"status": "OK"})
 }
 
-// NewPinsApiController creates a default api controller
-func NewPinsApiController(s PinsApiServicer, opts ...PinsApiOption) Router {
-	controller := &PinsApiController{
-		service:      s,
-		errorHandler: DefaultErrorHandler,
-	}
-
-	for _, opt := range opts {
-		opt(controller)
-	}
-
-	return controller
+// Delete /pins/:requestid
+// Remove pin object
+func (api *PinsAPI) DeletePinByRequestId(c *gin.Context) {
+	// Your handler implementation
+	c.JSON(200, gin.H{"status": "OK"})
 }
 
-// Routes returns all the api routes for the PinsApiController
-func (c *PinsApiController) Routes() Routes {
-	return Routes{
-		{
-			"AddPin",
-			strings.ToUpper("Post"),
-			"/pins",
-			c.AddPin,
-		},
-		{
-			"DeletePinByRequestId",
-			strings.ToUpper("Delete"),
-			"/pins/{requestid}",
-			c.DeletePinByRequestId,
-		},
-		{
-			"GetPinByRequestId",
-			strings.ToUpper("Get"),
-			"/pins/{requestid}",
-			c.GetPinByRequestId,
-		},
-		{
-			"GetPins",
-			strings.ToUpper("Get"),
-			"/pins",
-			c.GetPins,
-		},
-		{
-			"ReplacePinByRequestId",
-			strings.ToUpper("Post"),
-			"/pins/{requestid}",
-			c.ReplacePinByRequestId,
-		},
-	}
+// Get /pins/:requestid
+// Get pin object
+func (api *PinsAPI) GetPinByRequestId(c *gin.Context) {
+	// Your handler implementation
+	c.JSON(200, gin.H{"status": "OK"})
 }
 
-// AddPin - Add pin object
-func (c *PinsApiController) AddPin(w http.ResponseWriter, r *http.Request) {
-	pinParam := Pin{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&pinParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertPinRequired(pinParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.AddPin(r.Context(), pinParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-
+// Get /pins
+// List pin objects
+func (api *PinsAPI) GetPins(c *gin.Context) {
+	// Your handler implementation
+	c.JSON(200, gin.H{"status": "OK"})
 }
 
-// DeletePinByRequestId - Remove pin object
-func (c *PinsApiController) DeletePinByRequestId(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	requestidParam := params["requestid"]
-
-	result, err := c.service.DeletePinByRequestId(r.Context(), requestidParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-
-}
-
-// GetPinByRequestId - Get pin object
-func (c *PinsApiController) GetPinByRequestId(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	requestidParam := params["requestid"]
-
-	result, err := c.service.GetPinByRequestId(r.Context(), requestidParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-
-}
-
-// GetPins - List pin objects
-func (c *PinsApiController) GetPins(w http.ResponseWriter, r *http.Request) {
-	query := r.URL.Query()
-	cidParam := strings.Split(query.Get("cid"), ",")
-	nameParam := query.Get("name")
-	matchParam, err := parseTextMatchingStrategyParameter(query.Get("match"), false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	statusParam, err := parseStatusArrayParameter(query.Get("status"), ",", false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	beforeParam, err := parseTimeParameter(query.Get("before"), time.RFC3339, false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	afterParam, err := parseTimeParameter(query.Get("after"), time.RFC3339, false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	limitParam, err := parseInt32Parameter(query.Get("limit"), false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	metaParam, err := parsePinMetaParameter(query.Get("meta"), false)
-	if err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	result, err := c.service.GetPins(r.Context(), cidParam, nameParam, matchParam, statusParam, beforeParam, afterParam, limitParam, metaParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-
-}
-
-// ReplacePinByRequestId - Replace pin object
-func (c *PinsApiController) ReplacePinByRequestId(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	requestidParam := params["requestid"]
-
-	pinParam := Pin{}
-	d := json.NewDecoder(r.Body)
-	d.DisallowUnknownFields()
-	if err := d.Decode(&pinParam); err != nil {
-		c.errorHandler(w, r, &ParsingError{Err: err}, nil)
-		return
-	}
-	if err := AssertPinRequired(pinParam); err != nil {
-		c.errorHandler(w, r, err, nil)
-		return
-	}
-	result, err := c.service.ReplacePinByRequestId(r.Context(), requestidParam, pinParam)
-	// If an error occurred, encode the error with the status code
-	if err != nil {
-		c.errorHandler(w, r, err, &result)
-		return
-	}
-	// If no error, encode the body and the result code
-	EncodeJSONResponse(result.Body, &result.Code, w)
-
+// Post /pins/:requestid
+// Replace pin object
+func (api *PinsAPI) ReplacePinByRequestId(c *gin.Context) {
+	// Your handler implementation
+	c.JSON(200, gin.H{"status": "OK"})
 }

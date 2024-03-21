@@ -13,32 +13,3 @@ package server
 type Failure struct {
 	Error FailureError `json:"error"`
 }
-
-// AssertFailureRequired checks if the required fields are not zero-ed
-func AssertFailureRequired(obj Failure) error {
-	elements := map[string]interface{}{
-		"error": obj.Error,
-	}
-	for name, el := range elements {
-		if isZero := IsZeroValue(el); isZero {
-			return &RequiredError{Field: name}
-		}
-	}
-
-	if err := AssertFailureErrorRequired(obj.Error); err != nil {
-		return err
-	}
-	return nil
-}
-
-// AssertRecurseFailureRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of Failure (e.g. [][]Failure), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseFailureRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aFailure, ok := obj.(Failure)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertFailureRequired(aFailure)
-	})
-}

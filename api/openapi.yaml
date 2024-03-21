@@ -272,7 +272,6 @@ paths:
               examples:
                 BadRequestExample:
                   $ref: '#/components/examples/BadRequestExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Bad request)
@@ -282,7 +281,6 @@ paths:
               examples:
                 UnauthorizedExample:
                   $ref: '#/components/examples/UnauthorizedExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unauthorized; access token is missing or invalid)
@@ -292,7 +290,6 @@ paths:
               examples:
                 NotFoundExample:
                   $ref: '#/components/examples/NotFoundExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (The specified resource was not found)
@@ -302,7 +299,6 @@ paths:
               examples:
                 InsufficientFundsExample:
                   $ref: '#/components/examples/InsufficientFundsExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Insufficient funds)
@@ -312,7 +308,6 @@ paths:
               examples:
                 CustomServiceErrorExample:
                   $ref: '#/components/examples/CustomServiceErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Custom service error)
@@ -322,7 +317,6 @@ paths:
               examples:
                 InternalServerErrorExample:
                   $ref: '#/components/examples/InternalServerErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unexpected internal server error)
@@ -351,7 +345,6 @@ paths:
               examples:
                 BadRequestExample:
                   $ref: '#/components/examples/BadRequestExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Bad request)
@@ -361,7 +354,6 @@ paths:
               examples:
                 UnauthorizedExample:
                   $ref: '#/components/examples/UnauthorizedExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unauthorized; access token is missing or invalid)
@@ -371,7 +363,6 @@ paths:
               examples:
                 NotFoundExample:
                   $ref: '#/components/examples/NotFoundExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (The specified resource was not found)
@@ -381,7 +372,6 @@ paths:
               examples:
                 InsufficientFundsExample:
                   $ref: '#/components/examples/InsufficientFundsExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Insufficient funds)
@@ -391,7 +381,6 @@ paths:
               examples:
                 CustomServiceErrorExample:
                   $ref: '#/components/examples/CustomServiceErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Custom service error)
@@ -401,7 +390,6 @@ paths:
               examples:
                 InternalServerErrorExample:
                   $ref: '#/components/examples/InternalServerErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unexpected internal server error)
@@ -429,7 +417,6 @@ paths:
               examples:
                 BadRequestExample:
                   $ref: '#/components/examples/BadRequestExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Bad request)
@@ -439,7 +426,6 @@ paths:
               examples:
                 UnauthorizedExample:
                   $ref: '#/components/examples/UnauthorizedExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unauthorized; access token is missing or invalid)
@@ -449,7 +435,6 @@ paths:
               examples:
                 NotFoundExample:
                   $ref: '#/components/examples/NotFoundExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (The specified resource was not found)
@@ -459,7 +444,6 @@ paths:
               examples:
                 InsufficientFundsExample:
                   $ref: '#/components/examples/InsufficientFundsExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Insufficient funds)
@@ -469,7 +453,6 @@ paths:
               examples:
                 CustomServiceErrorExample:
                   $ref: '#/components/examples/CustomServiceErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Custom service error)
@@ -479,7 +462,6 @@ paths:
               examples:
                 InternalServerErrorExample:
                   $ref: '#/components/examples/InternalServerErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unexpected internal server error)
@@ -510,7 +492,6 @@ paths:
               examples:
                 BadRequestExample:
                   $ref: '#/components/examples/BadRequestExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Bad request)
@@ -520,7 +501,6 @@ paths:
               examples:
                 UnauthorizedExample:
                   $ref: '#/components/examples/UnauthorizedExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unauthorized; access token is missing or invalid)
@@ -530,7 +510,6 @@ paths:
               examples:
                 NotFoundExample:
                   $ref: '#/components/examples/NotFoundExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (The specified resource was not found)
@@ -540,7 +519,6 @@ paths:
               examples:
                 InsufficientFundsExample:
                   $ref: '#/components/examples/InsufficientFundsExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Insufficient funds)
@@ -550,7 +528,6 @@ paths:
               examples:
                 CustomServiceErrorExample:
                   $ref: '#/components/examples/CustomServiceErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Custom service error)
@@ -560,7 +537,6 @@ paths:
               examples:
                 InternalServerErrorExample:
                   $ref: '#/components/examples/InternalServerErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unexpected internal server error)
@@ -599,7 +575,6 @@ paths:
               examples:
                 BadRequestExample:
                   $ref: '#/components/examples/BadRequestExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Bad request)
@@ -609,7 +584,6 @@ paths:
               examples:
                 UnauthorizedExample:
                   $ref: '#/components/examples/UnauthorizedExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unauthorized; access token is missing or invalid)
@@ -619,7 +593,6 @@ paths:
               examples:
                 NotFoundExample:
                   $ref: '#/components/examples/NotFoundExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (The specified resource was not found)
@@ -629,7 +602,6 @@ paths:
               examples:
                 InsufficientFundsExample:
                   $ref: '#/components/examples/InsufficientFundsExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Insufficient funds)
@@ -639,7 +611,6 @@ paths:
               examples:
                 CustomServiceErrorExample:
                   $ref: '#/components/examples/CustomServiceErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Custom service error)
@@ -649,7 +620,6 @@ paths:
               examples:
                 InternalServerErrorExample:
                   $ref: '#/components/examples/InternalServerErrorExample'
-                  value: null
               schema:
                 $ref: '#/components/schemas/Failure'
           description: Error response (Unexpected internal server error)
@@ -811,7 +781,6 @@ components:
           examples:
             BadRequestExample:
               $ref: '#/components/examples/BadRequestExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (Bad request)
@@ -821,7 +790,6 @@ components:
           examples:
             UnauthorizedExample:
               $ref: '#/components/examples/UnauthorizedExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (Unauthorized; access token is missing or invalid)
@@ -831,7 +799,6 @@ components:
           examples:
             NotFoundExample:
               $ref: '#/components/examples/NotFoundExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (The specified resource was not found)
@@ -841,7 +808,6 @@ components:
           examples:
             InsufficientFundsExample:
               $ref: '#/components/examples/InsufficientFundsExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (Insufficient funds)
@@ -851,7 +817,6 @@ components:
           examples:
             CustomServiceErrorExample:
               $ref: '#/components/examples/CustomServiceErrorExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (Custom service error)
@@ -861,7 +826,6 @@ components:
           examples:
             InternalServerErrorExample:
               $ref: '#/components/examples/InternalServerErrorExample'
-              value: null
           schema:
             $ref: '#/components/schemas/Failure'
       description: Error response (Unexpected internal server error)
@@ -1098,6 +1062,10 @@ components:
       type: string
     Failure:
       description: Response for a failed request
+      example:
+        error:
+          reason: ERROR_CODE_FOR_MACHINES
+          details: Optional explanation for humans with more details
       properties:
         error:
           $ref: '#/components/schemas/Failure_error'
@@ -1105,6 +1073,9 @@ components:
       - error
       type: object
     Failure_error:
+      example:
+        reason: ERROR_CODE_FOR_MACHINES
+        details: Optional explanation for humans with more details
       properties:
         reason:
           description: Mandatory string identifying the type of error

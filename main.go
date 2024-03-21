@@ -11,18 +11,19 @@ package main
 
 import (
 	"log"
-	"net/http"
 
-	server "github.com/pinionengineering/pinning-service-models/server"
+	// WARNING!
+	// Pass --git-repo-id and --git-user-id properties when generating the code
+	//
+	sw "github.com/pinionengineering/pinning-service-models/server"
 )
 
 func main() {
+	routes := sw.ApiHandleFunctions{}
+
 	log.Printf("Server started")
 
-	PinsApiService := server.NewPinsApiService()
-	PinsApiController := server.NewPinsApiController(PinsApiService)
+	router := sw.NewRouter(routes)
 
-	router := server.NewRouter(PinsApiController)
-
-	log.Fatal(http.ListenAndServe(":8081", router))
+	log.Fatal(router.Run(":8080"))
 }

@@ -10,24 +10,5 @@
 package server
 
 // StatusInfo - Optional info for PinStatus response
-// type StatusInfo struct {
-// }
-
-type StatusInfo string
-
-// AssertStatusInfoRequired checks if the required fields are not zero-ed
-func AssertStatusInfoRequired(obj StatusInfo) error {
-	return nil
-}
-
-// AssertRecurseStatusInfoRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of StatusInfo (e.g. [][]StatusInfo), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseStatusInfoRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aStatusInfo, ok := obj.(StatusInfo)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertStatusInfoRequired(aStatusInfo)
-	})
+type StatusInfo struct {
 }

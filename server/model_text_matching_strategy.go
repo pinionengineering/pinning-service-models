@@ -9,8 +9,6 @@
 
 package server
 
-import "errors"
-
 // TextMatchingStrategy : Alternative text matching strategy
 type TextMatchingStrategy string
 
@@ -21,30 +19,3 @@ const (
 	PARTIAL  TextMatchingStrategy = "partial"
 	IPARTIAL TextMatchingStrategy = "ipartial"
 )
-
-// AssertTextMatchingStrategyRequired checks if the required fields are not zero-ed
-func AssertTextMatchingStrategyRequired(obj TextMatchingStrategy) error {
-	return nil
-}
-
-// AssertRecurseTextMatchingStrategyRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of TextMatchingStrategy (e.g. [][]TextMatchingStrategy), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseTextMatchingStrategyRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aTextMatchingStrategy, ok := obj.(TextMatchingStrategy)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertTextMatchingStrategyRequired(aTextMatchingStrategy)
-	})
-}
-
-// parseTextMatchingStrategyParameter parses a string parameter into a TextMatchingStrategy
-// this method was not code-generated
-// it is used to parse url query parameters into the TextMatchingStrategy type
-func parseTextMatchingStrategyParameter(param string, required bool) (TextMatchingStrategy, error) {
-	if param == "" && required {
-		return "", errors.New(errMsgRequiredMissing)
-	}
-	return TextMatchingStrategy(param), nil
-}

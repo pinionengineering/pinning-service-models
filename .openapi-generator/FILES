@@ -2,13 +2,8 @@ Dockerfile
 api/openapi.yaml
 go.mod
 main.go
-server/api.go
+server/README.md
 server/api_pins.go
-server/api_pins_service.go
-server/error.go
-server/helpers.go
-server/impl.go
-server/logger.go
 server/model_delegates.go
 server/model_failure.go
 server/model_failure_error.go

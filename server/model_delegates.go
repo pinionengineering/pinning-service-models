@@ -10,25 +10,5 @@
 package server
 
 // Delegates - List of multiaddrs designated by pinning service that will receive the pin data; see Provider Hints in the docs
-// type Delegates struct {
-// 	Items []string
-// }
-
-type Delegates []string
-
-// AssertDelegatesRequired checks if the required fields are not zero-ed
-func AssertDelegatesRequired(obj Delegates) error {
-	return nil
-}
-
-// AssertRecurseDelegatesRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of Delegates (e.g. [][]Delegates), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseDelegatesRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aDelegates, ok := obj.(Delegates)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertDelegatesRequired(aDelegates)
-	})
+type Delegates struct {
 }

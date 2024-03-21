@@ -18,35 +18,3 @@ type PinResults struct {
 	// An array of PinStatus results
 	Results []PinStatus `json:"results"`
 }
-
-// AssertPinResultsRequired checks if the required fields are not zero-ed
-func AssertPinResultsRequired(obj PinResults) error {
-	elements := map[string]interface{}{
-		"count":   obj.Count,
-		"results": obj.Results,
-	}
-	for name, el := range elements {
-		if isZero := IsZeroValue(el); isZero {
-			return &RequiredError{Field: name}
-		}
-	}
-
-	for _, el := range obj.Results {
-		if err := AssertPinStatusRequired(el); err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// AssertRecursePinResultsRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of PinResults (e.g. [][]PinResults), otherwise ErrTypeAssertionError is thrown.
-func AssertRecursePinResultsRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aPinResults, ok := obj.(PinResults)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertPinResultsRequired(aPinResults)
-	})
-}

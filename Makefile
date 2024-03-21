@@ -1,4 +1,4 @@
-export PATH := $(PWD)/tools/apache-maven-3.9.1/bin:$(PWD)/tools/:$(PATH)
+export PATH := $(PWD)/tools/apache-maven-3.9.6/bin:$(PWD)/tools/:$(PATH)
 export GITHOSTNAME := github.com
 export GITUSERID := pinionengineering
 export GITREPOID := pinning-service-models
@@ -19,19 +19,19 @@ tools/openapi-generator-cli:
 TOOLS+=tools/mvn
 tools/mvn:
 	mkdir -p tools
-	curl -sL https://dlcdn.apache.org/maven/maven-3/3.9.1/binaries/apache-maven-3.9.1-bin.tar.gz | tar -C tools/ -xzf -
+	curl -sL https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz | tar -C tools/ -xzf -
 
 
 .PHONY: generate
 generate: $(TOOLS) ipfs-pinning-service.yaml
-	openapi-generator-cli generate \
+	./tools/openapi-generator-cli generate \
 		--input-spec ipfs-pinning-service.yaml  \
 		--git-host $(GITHOSTNAME)  \
 		--git-user-id $(GITUSERID) \
 		--git-repo-id $(GITREPOID) \
 		--generate-alias-as-model \
-		--generator-name go-server \
-		--additional-properties packageName=server,sourceFolder=server,router=mux
+		--generator-name go-gin-server \
+		--additional-properties packageName=server,apiPath=server
 	go mod tidy
 	go fmt ./...
 

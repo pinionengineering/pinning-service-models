@@ -17,29 +17,3 @@ type FailureError struct {
 	// Optional, longer description of the error; may include UUID of transaction for support, links to documentation etc
 	Details string `json:"details,omitempty"`
 }
-
-// AssertFailureErrorRequired checks if the required fields are not zero-ed
-func AssertFailureErrorRequired(obj FailureError) error {
-	elements := map[string]interface{}{
-		"reason": obj.Reason,
-	}
-	for name, el := range elements {
-		if isZero := IsZeroValue(el); isZero {
-			return &RequiredError{Field: name}
-		}
-	}
-
-	return nil
-}
-
-// AssertRecurseFailureErrorRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of FailureError (e.g. [][]FailureError), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseFailureErrorRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aFailureError, ok := obj.(FailureError)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertFailureErrorRequired(aFailureError)
-	})
-}

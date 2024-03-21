@@ -9,11 +9,6 @@
 
 package server
 
-import (
-	"errors"
-	"strings"
-)
-
 // Status : Status a pin object can have at a pinning service
 type Status string
 
@@ -24,39 +19,3 @@ const (
 	PINNED  Status = "pinned"
 	FAILED  Status = "failed"
 )
-
-// AssertStatusRequired checks if the required fields are not zero-ed
-func AssertStatusRequired(obj Status) error {
-	return nil
-}
-
-// AssertRecurseStatusRequired recursively checks if required fields are not zero-ed in a nested slice.
-// Accepts only nested slice of Status (e.g. [][]Status), otherwise ErrTypeAssertionError is thrown.
-func AssertRecurseStatusRequired(objSlice interface{}) error {
-	return AssertRecurseInterfaceRequired(objSlice, func(obj interface{}) error {
-		aStatus, ok := obj.(Status)
-		if !ok {
-			return ErrTypeAssertionError
-		}
-		return AssertStatusRequired(aStatus)
-	})
-}
-
-// parseStatusArrayParameter parses a string parameter containing an array of values to []Status
-// this function is used by the generated code
-func parseStatusArrayParameter(param string, delim string, required bool) ([]Status, error) {
-	if param == "" {
-		if required {
-			return nil, errors.New(errMsgRequiredMissing)
-		}
-		return nil, nil
-	}
-
-	strs := strings.Split(param, delim)
-	statuss := make([]Status, len(strs))
-
-	for i, s := range strs {
-		statuss[i] = Status(s)
-	}
-	return statuss, nil
-}
