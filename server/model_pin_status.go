@@ -15,7 +15,6 @@ import (
 
 // PinStatus - Pin object with status
 type PinStatus struct {
-
 	// Globally unique identifier of the pin request; can be used to check the status of ongoing pinning, or pin removal
 	Requestid string `json:"requestid"`
 

@@ -10,5 +10,9 @@
 package server
 
 // Delegates - List of multiaddrs designated by pinning service that will receive the pin data; see Provider Hints in the docs
-type Delegates struct {
-}
+// type Delegates struct {
+// }
+
+// Replace after issue is completed.
+// TODO: https://github.com/OpenAPITools/openapi-generator/issues/18227
+type Delegates []string

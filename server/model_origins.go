@@ -10,5 +10,9 @@
 package server
 
 // Origins - Optional list of multiaddrs known to provide the data; see Provider Hints in the docs
-type Origins struct {
-}
+// type Origins struct {
+// }
+
+// Replace after issue is completed.
+// TODO: https://github.com/OpenAPITools/openapi-generator/issues/18227
+type Origins []string

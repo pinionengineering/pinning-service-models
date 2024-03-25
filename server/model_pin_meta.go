@@ -10,5 +10,9 @@
 package server
 
 // PinMeta - Optional metadata for pin object
-type PinMeta struct {
-}
+// type PinMeta struct {
+// }
+
+// Replace after issue is completed.
+// TODO: https://github.com/OpenAPITools/openapi-generator/issues/18227
+type PinMeta map[string]string

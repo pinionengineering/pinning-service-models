@@ -10,5 +10,9 @@
 package server
 
 // StatusInfo - Optional info for PinStatus response
-type StatusInfo struct {
-}
+// type StatusInfo struct {
+// }
+
+// Replace after issue is completed.
+// TODO: https://github.com/OpenAPITools/openapi-generator/issues/18227
+type StatusInfo map[string]string
