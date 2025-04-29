@@ -1,0 +1,659 @@
+/*
+IPFS Pinning Service API
+
+  ## About this spec The IPFS Pinning Service API is intended to be an implementation-agnostic API&#x3a; - For use and implementation by pinning service providers - For use in client mode by IPFS nodes and GUI-based applications  ### Document scope and intended audience The intended audience of this document is **IPFS developers** building pinning service clients or servers compatible with this OpenAPI spec. Your input and feedback are welcome and valuable as we develop this API spec. Please join the design discussion at [github.com/ipfs/pinning-services-api-spec](https://github.com/ipfs/pinning-services-api-spec).  **IPFS users** should see the tutorial at [docs.ipfs.io/how-to/work-with-pinning-services](https://docs.ipfs.io/how-to/work-with-pinning-services/) instead.  ### Related resources The latest version of this spec and additional resources can be found at: - Specification: https://github.com/ipfs/pinning-services-api-spec/raw/main/ipfs-pinning-service.yaml - Docs: https://ipfs.github.io/pinning-services-api-spec/ - Clients and services: https://github.com/ipfs/pinning-services-api-spec#adoption  # Schemas This section describes the most important object types and conventions.  A full list of fields and schemas can be found in the `schemas` section of the [YAML file](https://github.com/ipfs/pinning-services-api-spec/blob/master/ipfs-pinning-service.yaml).  ## Identifiers ### cid [Content Identifier (CID)](https://docs.ipfs.io/concepts/content-addressing/) points at the root of a DAG that is pinned recursively. ### requestid Unique identifier of a pin request.  When a pin is created, the service responds with unique `requestid` that can be later used for pin removal. When the same `cid` is pinned again, a different `requestid` is returned to differentiate between those pin requests.  Service implementation should use UUID, `hash(accessToken,Pin,PinStatus.created)`, or any other opaque identifier that provides equally strong protection against race conditions.  ## Objects ### Pin object  ![pin object](https://bafybeideck2fchyxna4wqwc2mo67yriokehw3yujboc5redjdaajrk2fjq.ipfs.dweb.link/pin.png)  The `Pin` object is a representation of a pin request.  It includes the `cid` of data to be pinned, as well as optional metadata in `name`, `origins`, and `meta`. Addresses provided in `origins` list are relevant only during the initial pinning, and don't need to be persisted by the pinning service.  ### Pin status response  ![pin status response object](https://bafybeideck2fchyxna4wqwc2mo67yriokehw3yujboc5redjdaajrk2fjq.ipfs.dweb.link/pinstatus.png)  The `PinStatus` object is a representation of the current state of a pinning operation. It includes values from the original `Pin` object, along with the current `status` and globally unique `requestid` of the entire pinning request, which can be used for future status checks and management. Addresses in the `delegates` array are peers designated by pinning service that will receive the pin data over bitswap (more details in the [Provider hints](#section/Provider-hints) section). Any additional vendor-specific information is returned in optional `info`.  # The pin lifecycle  ![pinning service objects and lifecycle](https://bafybeideck2fchyxna4wqwc2mo67yriokehw3yujboc5redjdaajrk2fjq.ipfs.dweb.link/lifecycle.png)  ## Creating a new pin object The user sends a `Pin` object to `POST /pins` and receives a `PinStatus` response: - `requestid` in `PinStatus` is the identifier of the pin operation, which can can be used for checking status, and removing the pin in the future - `status` in `PinStatus` indicates the current state of a pin  ## Checking status of in-progress pinning `status` (in `PinStatus`) may indicate one of the two pending states: `queued` or `pinning`: - `queued` is passive: the pin was added to the queue but the service isn't consuming any resources to retrieve it yet. - `pinning` is active: the pinning service is trying to retrieve the CIDs by finding providers for all involved CIDs, connect to these providers and download data from them. When a new pin object is created it typically starts in a `queued` state. Once the pinning service actively seeks to retrieve the file it changes to `pinning`. `pinning` typically means that the data behind `Pin.cid` was not found on the pinning service and is being fetched from the IPFS network at large, which may take time. In either case, the user can periodically check pinning progress via `GET /pins/{requestid}` until pinning is successful, or the user decides to remove the pending pin. ## Replacing an existing pin object The user can replace an existing pin object via `POST /pins/{requestid}`. This is a shortcut for removing a pin object identified by `requestid` and creating a new one in a single API call that protects against undesired garbage collection of blocks common to both pins. Useful when updating a pin representing a huge dataset where most of blocks did not change. The new pin object `requestid` is returned in the `PinStatus` response. The old pin object is deleted automatically.  ## Removing a pin object A pin object can be removed via `DELETE /pins/{requestid}`.   # Provider hints Provider hints take the form of two [multiaddr](https://docs.ipfs.io/concepts/glossary/#multiaddr) lists: `Pin.origins` and `PinStatus.delegates`  ## Pin.origins A list of known sources (providers) of the data. Sent by a client in a pin request. Pinning service will try to connect to them to speed up data transfer.  ## PinStatus.delegates A list of temporary destination (retrievers) for the data. Returned by pinning service in a response for a pin request. These peers are provided by a pinning service for the purpose of fetching data about to be pinned.  ## Optimizing for speed and connectivity Both ends should attempt to preconnect to each other: - Delegates should always preconnect to origins - Clients who initiate pin request and also have the pinned data in their own local datastore should preconnect to delegates  **NOTE:** Connections to multiaddrs in `origins` and `delegates` arrays should be attempted in best-effort fashion, and dial failure should not fail the pinning operation. When unable to act on explicit provider hints, DHT and other discovery methods should be used as a fallback by a pinning service.  ## Rationale A pinning service will use the DHT and other discovery methods to locate pinned content; however, it may not be able to retrieve data if the only provider has no publicly diallable address (e.g. a desktop peer behind a restrictive NAT/firewall).  Leveraging provider hints mitigates potential connectivity issues and speeds up the content routing phase. If a client has the data in their own datastore or already knows of other providers, the transfer will start immediately.  The most common scenario is a client putting its own IPFS node's multiaddrs in `Pin.origins`,  and then attempt to connect to every multiaddr returned by a pinning service in `PinStatus.delegates` to initiate transfer.  At the same time, a pinning service will try to connect to multiaddrs provided by the client in `Pin.origins`.  This ensures data transfer starts immediately (without waiting for provider discovery over DHT), and mutual direct dial between a client and a service works around peer routing issues in restrictive network topologies, such as NATs, firewalls, etc.  **NOTE:** All multiaddrs MUST end with `/p2p/{peerID}` and SHOULD be fully resolved and confirmed to be dialable from the public internet. Avoid sending addresses from local networks.  # Custom metadata Pinning services are encouraged to add support for additional features by leveraging the optional `Pin.meta` and `PinStatus.info` fields. While these attributes can be application- or vendor-specific, we encourage the community at large to leverage these attributes as a sandbox to come up with conventions that could become part of future revisions of this API. ## Pin metadata String keys and values passed in `Pin.meta` are persisted with the pin object. This is an opt-in feature: It is OK for a client to omit or ignore these optional attributes, and doing so should not impact the basic pinning functionality.  Potential uses: - `Pin.meta[app_id]`: Attaching a unique identifier to pins created by an app enables meta-filtering pins per app - `Pin.meta[vendor_policy]`: Vendor-specific policy (for example: which region to use, how many copies to keep)  ### Filtering based on metadata The contents of `Pin.meta` can be used as an advanced search filter for situations where searching by `name` and `cid` is not enough.  Metadata key matching rule is `AND`: - lookup returns pins that have `meta` with all key-value pairs matching the passed values - pin metadata may have more keys, but only ones passed in the query are used for filtering  The wire format for the `meta` when used as a query parameter is a [URL-escaped](https://en.wikipedia.org/wiki/Percent-encoding) stringified JSON object. A lookup example for pins that have a `meta` key-value pair `{\"app_id\":\"UUID\"}` is: - `GET /pins?meta=%7B%22app_id%22%3A%22UUID%22%7D`   ## Pin status info Additional `PinStatus.info` can be returned by pinning service.  Potential uses: - `PinStatus.info[status_details]`: more info about the current status (queue position, percentage of transferred data, summary of where data is stored, etc); when `PinStatus.status=failed`, it could provide a reason why a pin operation failed (e.g. lack of funds, DAG too big, etc.) - `PinStatus.info[dag_size]`: the size of pinned data, along with DAG overhead - `PinStatus.info[raw_size]`: the size of data without DAG overhead (eg. unixfs) - `PinStatus.info[pinned_until]`: if vendor supports time-bound pins, this could indicate when the pin will expire  # Pagination and filtering Pin objects can be listed by executing `GET /pins` with optional parameters:  - When no filters are provided, the endpoint will return a small batch of the 10 most recently created items, from the latest to the oldest. - The number of returned items can be adjusted with the `limit` parameter (implicit default is 10). - If the value in `PinResults.count` is bigger than the length of `PinResults.results`, the client can infer there are more results that can be queried. - To read more items, pass the `before` filter with the timestamp from `PinStatus.created` found in the oldest item in the current batch of results. Repeat to read all results. - Returned results can be fine-tuned by applying optional `after`, `cid`, `name`, `status`, or `meta` filters.  > **Note**: pagination by the `created` timestamp requires each value to be globally unique. Any future considerations to add support for bulk creation must account for this.  
+
+API version: 1.0.0
+*/
+
+// Code generated by OpenAPI Generator (https://openapi-generator.tech); DO NOT EDIT.
+
+package client
+
+import (
+	"bytes"
+	"context"
+	"encoding/json"
+	"encoding/xml"
+	"errors"
+	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
+	"net/http"
+	"net/http/httputil"
+	"net/url"
+	"os"
+	"path/filepath"
+	"reflect"
+	"regexp"
+	"strconv"
+	"strings"
+	"time"
+	"unicode/utf8"
+
+)
+
+var (
+	JsonCheck       = regexp.MustCompile(`(?i:(?:application|text)/(?:[^;]+\+)?json)`)
+	XmlCheck        = regexp.MustCompile(`(?i:(?:application|text)/(?:[^;]+\+)?xml)`)
+	queryParamSplit = regexp.MustCompile(`(^|&)([^&]+)`)
+	queryDescape    = strings.NewReplacer( "%5B", "[", "%5D", "]" )
+)
+
+// APIClient manages communication with the IPFS Pinning Service API API v1.0.0
+// In most cases there should be only one, shared, APIClient.
+type APIClient struct {
+	cfg    *Configuration
+	common service // Reuse a single struct instead of allocating one for each service on the heap.
+
+	// API Services
+
+	PinsAPI *PinsAPIService
+}
+
+type service struct {
+	client *APIClient
+}
+
+// NewAPIClient creates a new API client. Requires a userAgent string describing your application.
+// optionally a custom http.Client to allow for advanced features such as caching.
+func NewAPIClient(cfg *Configuration) *APIClient {
+	if cfg.HTTPClient == nil {
+		cfg.HTTPClient = http.DefaultClient
+	}
+
+	c := &APIClient{}
+	c.cfg = cfg
+	c.common.client = c
+
+	// API Services
+	c.PinsAPI = (*PinsAPIService)(&c.common)
+
+	return c
+}
+
+func atoi(in string) (int, error) {
+	return strconv.Atoi(in)
+}
+
+// selectHeaderContentType select a content type from the available list.
+func selectHeaderContentType(contentTypes []string) string {
+	if len(contentTypes) == 0 {
+		return ""
+	}
+	if contains(contentTypes, "application/json") {
+		return "application/json"
+	}
+	return contentTypes[0] // use the first content type specified in 'consumes'
+}
+
+// selectHeaderAccept join all accept types and return
+func selectHeaderAccept(accepts []string) string {
+	if len(accepts) == 0 {
+		return ""
+	}
+
+	if contains(accepts, "application/json") {
+		return "application/json"
+	}
+
+	return strings.Join(accepts, ",")
+}
+
+// contains is a case insensitive match, finding needle in a haystack
+func contains(haystack []string, needle string) bool {
+	for _, a := range haystack {
+		if strings.EqualFold(a, needle) {
+			return true
+		}
+	}
+	return false
+}
+
+// Verify optional parameters are of the correct type.
+func typeCheckParameter(obj interface{}, expected string, name string) error {
+	// Make sure there is an object.
+	if obj == nil {
+		return nil
+	}
+
+	// Check the type is as expected.
+	if reflect.TypeOf(obj).String() != expected {
+		return fmt.Errorf("expected %s to be of type %s but received %s", name, expected, reflect.TypeOf(obj).String())
+	}
+	return nil
+}
+
+func parameterValueToString( obj interface{}, key string ) string {
+	if reflect.TypeOf(obj).Kind() != reflect.Ptr {
+		if actualObj, ok := obj.(interface{ GetActualInstanceValue() interface{} }); ok {
+			return fmt.Sprintf("%v", actualObj.GetActualInstanceValue())
+		}
+
+		return fmt.Sprintf("%v", obj)
+	}
+	var param,ok = obj.(MappedNullable)
+	if !ok {
+		return ""
+	}
+	dataMap,err := param.ToMap()
+	if err != nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", dataMap[key])
+}
+
+// parameterAddToHeaderOrQuery adds the provided object to the request header or url query
+// supporting deep object syntax
+func parameterAddToHeaderOrQuery(headerOrQueryParams interface{}, keyPrefix string, obj interface{}, style string, collectionType string) {
+	var v = reflect.ValueOf(obj)
+	var value = ""
+	if v == reflect.ValueOf(nil) {
+		value = "null"
+	} else {
+		switch v.Kind() {
+			case reflect.Invalid:
+				value = "invalid"
+
+			case reflect.Struct:
+				if t,ok := obj.(MappedNullable); ok {
+					dataMap,err := t.ToMap()
+					if err != nil {
+						return
+					}
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, dataMap, style, collectionType)
+					return
+				}
+				if t, ok := obj.(time.Time); ok {
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, t.Format(time.RFC3339Nano), style, collectionType)
+					return
+				}
+				value = v.Type().String() + " value"
+			case reflect.Slice:
+				var indValue = reflect.ValueOf(obj)
+				if indValue == reflect.ValueOf(nil) {
+					return
+				}
+				var lenIndValue = indValue.Len()
+				for i:=0;i<lenIndValue;i++ {
+					var arrayValue = indValue.Index(i)
+					var keyPrefixForCollectionType = keyPrefix
+					if style == "deepObject" {
+						keyPrefixForCollectionType = keyPrefix + "[" + strconv.Itoa(i) + "]"
+					}
+					parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefixForCollectionType, arrayValue.Interface(), style, collectionType)
+				}
+				return
+
+			case reflect.Map:
+				var indValue = reflect.ValueOf(obj)
+				if indValue == reflect.ValueOf(nil) {
+					return
+				}
+				iter := indValue.MapRange()
+				for iter.Next() {
+					k,v := iter.Key(), iter.Value()
+					parameterAddToHeaderOrQuery(headerOrQueryParams, fmt.Sprintf("%s[%s]", keyPrefix, k.String()), v.Interface(), style, collectionType)
+				}
+				return
+
+			case reflect.Interface:
+				fallthrough
+			case reflect.Ptr:
+				parameterAddToHeaderOrQuery(headerOrQueryParams, keyPrefix, v.Elem().Interface(), style, collectionType)
+				return
+
+			case reflect.Int, reflect.Int8, reflect.Int16,
+				reflect.Int32, reflect.Int64:
+				value = strconv.FormatInt(v.Int(), 10)
+			case reflect.Uint, reflect.Uint8, reflect.Uint16,
+				reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+				value = strconv.FormatUint(v.Uint(), 10)
+			case reflect.Float32, reflect.Float64:
+				value = strconv.FormatFloat(v.Float(), 'g', -1, 32)
+			case reflect.Bool:
+				value = strconv.FormatBool(v.Bool())
+			case reflect.String:
+				value = v.String()
+			default:
+				value = v.Type().String() + " value"
+		}
+	}
+
+	switch valuesMap := headerOrQueryParams.(type) {
+		case url.Values:
+			if collectionType == "csv" && valuesMap.Get(keyPrefix) != "" {
+				valuesMap.Set(keyPrefix, valuesMap.Get(keyPrefix) + "," + value)
+			} else {
+				valuesMap.Add(keyPrefix, value)
+			}
+			break
+		case map[string]string:
+			valuesMap[keyPrefix] = value
+			break
+	}
+}
+
+// helper for converting interface{} parameters to json strings
+func parameterToJson(obj interface{}) (string, error) {
+	jsonBuf, err := json.Marshal(obj)
+	if err != nil {
+		return "", err
+	}
+	return string(jsonBuf), err
+}
+
+// callAPI do the request.
+func (c *APIClient) callAPI(request *http.Request) (*http.Response, error) {
+	if c.cfg.Debug {
+		dump, err := httputil.DumpRequestOut(request, true)
+		if err != nil {
+			return nil, err
+		}
+		log.Printf("\n%s\n", string(dump))
+	}
+
+	resp, err := c.cfg.HTTPClient.Do(request)
+	if err != nil {
+		return resp, err
+	}
+
+	if c.cfg.Debug {
+		dump, err := httputil.DumpResponse(resp, true)
+		if err != nil {
+			return resp, err
+		}
+		log.Printf("\n%s\n", string(dump))
+	}
+	return resp, err
+}
+
+// Allow modification of underlying config for alternate implementations and testing
+// Caution: modifying the configuration while live can cause data races and potentially unwanted behavior
+func (c *APIClient) GetConfig() *Configuration {
+	return c.cfg
+}
+
+type formFile struct {
+		fileBytes []byte
+		fileName string
+		formFileName string
+}
+
+// prepareRequest build the request
+func (c *APIClient) prepareRequest(
+	ctx context.Context,
+	path string, method string,
+	postBody interface{},
+	headerParams map[string]string,
+	queryParams url.Values,
+	formParams url.Values,
+	formFiles []formFile) (localVarRequest *http.Request, err error) {
+
+	var body *bytes.Buffer
+
+	// Detect postBody type and post.
+	if postBody != nil {
+		contentType := headerParams["Content-Type"]
+		if contentType == "" {
+			contentType = detectContentType(postBody)
+			headerParams["Content-Type"] = contentType
+		}
+
+		body, err = setBody(postBody, contentType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// add form parameters and file if available.
+	if strings.HasPrefix(headerParams["Content-Type"], "multipart/form-data") && len(formParams) > 0 || (len(formFiles) > 0) {
+		if body != nil {
+			return nil, errors.New("Cannot specify postBody and multipart form at the same time.")
+		}
+		body = &bytes.Buffer{}
+		w := multipart.NewWriter(body)
+
+		for k, v := range formParams {
+			for _, iv := range v {
+				if strings.HasPrefix(k, "@") { // file
+					err = addFile(w, k[1:], iv)
+					if err != nil {
+						return nil, err
+					}
+				} else { // form value
+					w.WriteField(k, iv)
+				}
+			}
+		}
+		for _, formFile := range formFiles {
+			if len(formFile.fileBytes) > 0 && formFile.fileName != "" {
+				w.Boundary()
+				part, err := w.CreateFormFile(formFile.formFileName, filepath.Base(formFile.fileName))
+				if err != nil {
+						return nil, err
+				}
+				_, err = part.Write(formFile.fileBytes)
+				if err != nil {
+						return nil, err
+				}
+			}
+		}
+
+		// Set the Boundary in the Content-Type
+		headerParams["Content-Type"] = w.FormDataContentType()
+
+		// Set Content-Length
+		headerParams["Content-Length"] = fmt.Sprintf("%d", body.Len())
+		w.Close()
+	}
+
+	if strings.HasPrefix(headerParams["Content-Type"], "application/x-www-form-urlencoded") && len(formParams) > 0 {
+		if body != nil {
+			return nil, errors.New("Cannot specify postBody and x-www-form-urlencoded form at the same time.")
+		}
+		body = &bytes.Buffer{}
+		body.WriteString(formParams.Encode())
+		// Set Content-Length
+		headerParams["Content-Length"] = fmt.Sprintf("%d", body.Len())
+	}
+
+	// Setup path and query parameters
+	url, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
+	// Override request host, if applicable
+	if c.cfg.Host != "" {
+		url.Host = c.cfg.Host
+	}
+
+	// Override request scheme, if applicable
+	if c.cfg.Scheme != "" {
+		url.Scheme = c.cfg.Scheme
+	}
+
+	// Adding Query Param
+	query := url.Query()
+	for k, v := range queryParams {
+		for _, iv := range v {
+			query.Add(k, iv)
+		}
+	}
+
+	// Encode the parameters.
+	url.RawQuery = queryParamSplit.ReplaceAllStringFunc(query.Encode(), func(s string) string {
+		pieces := strings.Split(s, "=")
+		pieces[0] = queryDescape.Replace(pieces[0])
+		return strings.Join(pieces, "=")
+	})
+
+	// Generate a new request
+	if body != nil {
+		localVarRequest, err = http.NewRequest(method, url.String(), body)
+	} else {
+		localVarRequest, err = http.NewRequest(method, url.String(), nil)
+	}
+	if err != nil {
+		return nil, err
+	}
+
+	// add header parameters, if any
+	if len(headerParams) > 0 {
+		headers := http.Header{}
+		for h, v := range headerParams {
+			headers[h] = []string{v}
+		}
+		localVarRequest.Header = headers
+	}
+
+	// Add the user agent to the request.
+	localVarRequest.Header.Add("User-Agent", c.cfg.UserAgent)
+
+	if ctx != nil {
+		// add context to the request
+		localVarRequest = localVarRequest.WithContext(ctx)
+
+		// Walk through any authentication.
+
+		// AccessToken Authentication
+		if auth, ok := ctx.Value(ContextAccessToken).(string); ok {
+			localVarRequest.Header.Add("Authorization", "Bearer "+auth)
+		}
+
+	}
+
+	for header, value := range c.cfg.DefaultHeader {
+		localVarRequest.Header.Add(header, value)
+	}
+	return localVarRequest, nil
+}
+
+func (c *APIClient) decode(v interface{}, b []byte, contentType string) (err error) {
+	if len(b) == 0 {
+		return nil
+	}
+	if s, ok := v.(*string); ok {
+		*s = string(b)
+		return nil
+	}
+	if f, ok := v.(*os.File); ok {
+		f, err = os.CreateTemp("", "HttpClientFile")
+		if err != nil {
+			return
+		}
+		_, err = f.Write(b)
+		if err != nil {
+			return
+		}
+		_, err = f.Seek(0, io.SeekStart)
+		return
+	}
+	if f, ok := v.(**os.File); ok {
+		*f, err = os.CreateTemp("", "HttpClientFile")
+		if err != nil {
+			return
+		}
+		_, err = (*f).Write(b)
+		if err != nil {
+			return
+		}
+		_, err = (*f).Seek(0, io.SeekStart)
+		return
+	}
+	if XmlCheck.MatchString(contentType) {
+		if err = xml.Unmarshal(b, v); err != nil {
+			return err
+		}
+		return nil
+	}
+	if JsonCheck.MatchString(contentType) {
+		if actualObj, ok := v.(interface{ GetActualInstance() interface{} }); ok { // oneOf, anyOf schemas
+			if unmarshalObj, ok := actualObj.(interface{ UnmarshalJSON([]byte) error }); ok { // make sure it has UnmarshalJSON defined
+				if err = unmarshalObj.UnmarshalJSON(b); err != nil {
+					return err
+				}
+			} else {
+				return errors.New("Unknown type with GetActualInstance but no unmarshalObj.UnmarshalJSON defined")
+			}
+		} else if err = json.Unmarshal(b, v); err != nil { // simple model
+			return err
+		}
+		return nil
+	}
+	return errors.New("undefined response type")
+}
+
+// Add a file to the multipart request
+func addFile(w *multipart.Writer, fieldName, path string) error {
+	file, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return err
+	}
+	err = file.Close()
+	if err != nil {
+		return err
+	}
+
+	part, err := w.CreateFormFile(fieldName, filepath.Base(path))
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(part, file)
+
+	return err
+}
+
+// Set request body from an interface{}
+func setBody(body interface{}, contentType string) (bodyBuf *bytes.Buffer, err error) {
+	bodyBuf = &bytes.Buffer{}
+
+	if reader, ok := body.(io.Reader); ok {
+		_, err = bodyBuf.ReadFrom(reader)
+	} else if fp, ok := body.(*os.File); ok {
+		_, err = bodyBuf.ReadFrom(fp)
+	} else if b, ok := body.([]byte); ok {
+		_, err = bodyBuf.Write(b)
+	} else if s, ok := body.(string); ok {
+		_, err = bodyBuf.WriteString(s)
+	} else if s, ok := body.(*string); ok {
+		_, err = bodyBuf.WriteString(*s)
+	} else if JsonCheck.MatchString(contentType) {
+		err = json.NewEncoder(bodyBuf).Encode(body)
+	} else if XmlCheck.MatchString(contentType) {
+		var bs []byte
+		bs, err = xml.Marshal(body)
+		if err == nil {
+			bodyBuf.Write(bs)
+		}
+	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	if bodyBuf.Len() == 0 {
+		err = fmt.Errorf("invalid body type %s\n", contentType)
+		return nil, err
+	}
+	return bodyBuf, nil
+}
+
+// detectContentType method is used to figure out `Request.Body` content type for request header
+func detectContentType(body interface{}) string {
+	contentType := "text/plain; charset=utf-8"
+	kind := reflect.TypeOf(body).Kind()
+
+	switch kind {
+	case reflect.Struct, reflect.Map, reflect.Ptr:
+		contentType = "application/json; charset=utf-8"
+	case reflect.String:
+		contentType = "text/plain; charset=utf-8"
+	default:
+		if b, ok := body.([]byte); ok {
+			contentType = http.DetectContentType(b)
+		} else if kind == reflect.Slice {
+			contentType = "application/json; charset=utf-8"
+		}
+	}
+
+	return contentType
+}
+
+// Ripped from https://github.com/gregjones/httpcache/blob/master/httpcache.go
+type cacheControl map[string]string
+
+func parseCacheControl(headers http.Header) cacheControl {
+	cc := cacheControl{}
+	ccHeader := headers.Get("Cache-Control")
+	for _, part := range strings.Split(ccHeader, ",") {
+		part = strings.Trim(part, " ")
+		if part == "" {
+			continue
+		}
+		if strings.ContainsRune(part, '=') {
+			keyval := strings.Split(part, "=")
+			cc[strings.Trim(keyval[0], " ")] = strings.Trim(keyval[1], ",")
+		} else {
+			cc[part] = ""
+		}
+	}
+	return cc
+}
+
+// CacheExpires helper function to determine remaining time before repeating a request.
+func CacheExpires(r *http.Response) time.Time {
+	// Figure out when the cache expires.
+	var expires time.Time
+	now, err := time.Parse(time.RFC1123, r.Header.Get("date"))
+	if err != nil {
+		return time.Now()
+	}
+	respCacheControl := parseCacheControl(r.Header)
+
+	if maxAge, ok := respCacheControl["max-age"]; ok {
+		lifetime, err := time.ParseDuration(maxAge + "s")
+		if err != nil {
+			expires = now
+		} else {
+			expires = now.Add(lifetime)
+		}
+	} else {
+		expiresHeader := r.Header.Get("Expires")
+		if expiresHeader != "" {
+			expires, err = time.Parse(time.RFC1123, expiresHeader)
+			if err != nil {
+				expires = now
+			}
+		}
+	}
+	return expires
+}
+
+func strlen(s string) int {
+	return utf8.RuneCountInString(s)
+}
+
+// GenericOpenAPIError Provides access to the body, error and model on returned errors.
+type GenericOpenAPIError struct {
+	body  []byte
+	error string
+	model interface{}
+}
+
+// Error returns non-empty string if there was an error.
+func (e GenericOpenAPIError) Error() string {
+	return e.error
+}
+
+// Body returns the raw bytes of the response
+func (e GenericOpenAPIError) Body() []byte {
+	return e.body
+}
+
+// Model returns the unpacked model of the error
+func (e GenericOpenAPIError) Model() interface{} {
+	return e.model
+}
+
+// format error message using title and detail when model implements rfc7807
+func formatErrorMessage(status string, v interface{}) string {
+	str := ""
+	metaValue := reflect.ValueOf(v).Elem()
+
+	if metaValue.Kind() == reflect.Struct {
+		field := metaValue.FieldByName("Title")
+		if field != (reflect.Value{}) {
+			str = fmt.Sprintf("%s", field.Interface())
+		}
+
+		field = metaValue.FieldByName("Detail")
+		if field != (reflect.Value{}) {
+			str = fmt.Sprintf("%s (%s)", str, field.Interface())
+		}
+	}
+
+	return strings.TrimSpace(fmt.Sprintf("%s %s", status, str))
+}
