@@ -35,6 +35,21 @@ generate: $(TOOLS) ipfs-pinning-service.yaml
 	go mod tidy
 	go fmt ./...
 
+.PHONY: generate-go-client
+generate-go-client: $(TOOLS) ipfs-pinning-service.yaml
+	./tools/openapi-generator-cli generate \
+		--input-spec ipfs-pinning-service.yaml  \
+		--git-host $(GITHOSTNAME)  \
+		--git-user-id $(GITUSERID) \
+		--git-repo-id $(GITREPOID) \
+		--generate-alias-as-model \
+		--generator-name go \
+		--package-name client \
+		-o ./go-client
+	go mod tidy
+	go fmt ./...
+
+
 
 .PHONY: test
 test:
