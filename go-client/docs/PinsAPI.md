@@ -29,7 +29,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func main() {
@@ -95,7 +95,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func main() {
@@ -163,7 +163,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func main() {
@@ -234,7 +234,7 @@ import (
 	"fmt"
 	"os"
     "time"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func main() {
@@ -314,7 +314,7 @@ import (
 	"context"
 	"fmt"
 	"os"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func main() {

@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"testing"
-	openapiclient "github.com/pinionengineering/pinning-service-models"
+	openapiclient "github.com/pinionengineering/pinning-service-models/go-client"
 )
 
 func Test_client_PinsAPIService(t *testing.T) {
